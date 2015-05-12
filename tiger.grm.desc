@@ -1,0 +1,131 @@
+
+state 0:
+
+	program : . exp 
+
+	INT	shift 5
+	STRING	shift 4
+	LPAREN	shift 3
+	NIL	shift 2
+
+	exp	goto 1
+	program	goto 11
+
+	.	error
+
+
+state 1:
+
+	program : exp .  (reduce by rule 0)
+
+
+
+	.	reduce by rule 0
+
+
+state 2:
+
+	exp : NIL .  (reduce by rule 1)
+
+
+
+	.	reduce by rule 1
+
+
+state 3:
+
+	exp : LPAREN . seq RPAREN 
+
+	INT	shift 5
+	STRING	shift 4
+	LPAREN	shift 3
+	NIL	shift 2
+
+	exp	goto 7
+	seq	goto 6
+
+	.	error
+
+
+state 4:
+
+	exp : STRING .  (reduce by rule 3)
+
+
+
+	.	reduce by rule 3
+
+
+state 5:
+
+	exp : INT .  (reduce by rule 2)
+
+
+
+	.	reduce by rule 2
+
+
+state 6:
+
+	exp : LPAREN seq . RPAREN 
+
+	RPAREN	shift 8
+
+
+	.	error
+
+
+state 7:
+
+	seq : exp . SEMICOLON seq 
+	seq : exp .  (reduce by rule 6)
+
+	SEMICOLON	shift 9
+
+
+	.	reduce by rule 6
+
+
+state 8:
+
+	exp : LPAREN seq RPAREN .  (reduce by rule 4)
+
+
+
+	.	reduce by rule 4
+
+
+state 9:
+
+	seq : exp SEMICOLON . seq 
+
+	INT	shift 5
+	STRING	shift 4
+	LPAREN	shift 3
+	NIL	shift 2
+
+	exp	goto 7
+	seq	goto 10
+
+	.	error
+
+
+state 10:
+
+	seq : exp SEMICOLON seq .  (reduce by rule 5)
+
+
+
+	.	reduce by rule 5
+
+
+state 11:
+
+
+	EOF	accept
+
+
+	.	error
+
+7 of 27 action table entries left after compaction
+6 goto table entries
