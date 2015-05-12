@@ -3,18 +3,40 @@ state 0:
 
 	program : . exp 
 
-	INT	shift 5
-	STRING	shift 4
-	LPAREN	shift 3
-	NIL	shift 2
+	ID	shift 9
+	INT	shift 8
+	STRING	shift 7
+	LPAREN	shift 6
+	LET	shift 5
+	NIL	shift 4
 
-	exp	goto 1
-	program	goto 11
+	exp	goto 3
+	arr_exp	goto 2
+	let'	goto 1
+	program	goto 43
 
 	.	error
 
 
 state 1:
+
+	exp : let' .  (reduce by rule 6)
+
+
+
+	.	reduce by rule 6
+
+
+state 2:
+
+	exp : arr_exp .  (reduce by rule 7)
+
+
+
+	.	reduce by rule 7
+
+
+state 3:
 
 	program : exp .  (reduce by rule 0)
 
@@ -23,7 +45,7 @@ state 1:
 	.	reduce by rule 0
 
 
-state 2:
+state 4:
 
 	exp : NIL .  (reduce by rule 1)
 
@@ -32,22 +54,41 @@ state 2:
 	.	reduce by rule 1
 
 
-state 3:
+state 5:
 
-	exp : LPAREN . seq RPAREN 
+	let' : LET . decs IN seq END 
 
-	INT	shift 5
-	STRING	shift 4
-	LPAREN	shift 3
-	NIL	shift 2
+	VAR	shift 15
+	TYPE	shift 14
 
-	exp	goto 7
-	seq	goto 6
+	decs	goto 13
+	dec	goto 12
+	type_dec	goto 11
+	var_dec	goto 10
 
 	.	error
 
 
-state 4:
+state 6:
+
+	exp : LPAREN . seq RPAREN 
+
+	ID	shift 9
+	INT	shift 8
+	STRING	shift 7
+	LPAREN	shift 6
+	LET	shift 5
+	NIL	shift 4
+
+	exp	goto 17
+	arr_exp	goto 2
+	seq	goto 16
+	let'	goto 1
+
+	.	error
+
+
+state 7:
 
 	exp : STRING .  (reduce by rule 3)
 
@@ -56,7 +97,7 @@ state 4:
 	.	reduce by rule 3
 
 
-state 5:
+state 8:
 
 	exp : INT .  (reduce by rule 2)
 
@@ -65,61 +106,401 @@ state 5:
 	.	reduce by rule 2
 
 
-state 6:
+state 9:
 
-	exp : LPAREN seq . RPAREN 
+	exp : ID .  (reduce by rule 4)
+	arr_exp : ID . LBRACK exp RBRACK OF exp 
 
-	RPAREN	shift 8
-
-
-	.	error
-
-
-state 7:
-
-	seq : exp . SEMICOLON seq 
-	seq : exp .  (reduce by rule 6)
-
-	SEMICOLON	shift 9
-
-
-	.	reduce by rule 6
-
-
-state 8:
-
-	exp : LPAREN seq RPAREN .  (reduce by rule 4)
-
+	LBRACK	shift 18
 
 
 	.	reduce by rule 4
 
 
-state 9:
+state 10:
 
-	seq : exp SEMICOLON . seq 
+	dec : var_dec .  (reduce by rule 15)
 
-	INT	shift 5
-	STRING	shift 4
-	LPAREN	shift 3
-	NIL	shift 2
 
-	exp	goto 7
-	seq	goto 10
+
+	.	reduce by rule 15
+
+
+state 11:
+
+	dec : type_dec .  (reduce by rule 14)
+
+
+
+	.	reduce by rule 14
+
+
+state 12:
+
+	decs : dec . decs 
+	decs : dec .  (reduce by rule 13)
+
+	VAR	shift 15
+	TYPE	shift 14
+
+	decs	goto 19
+	dec	goto 12
+	type_dec	goto 11
+	var_dec	goto 10
+
+	.	reduce by rule 13
+
+
+state 13:
+
+	let' : LET decs . IN seq END 
+
+	IN	shift 20
+
 
 	.	error
 
 
-state 10:
+state 14:
 
-	seq : exp SEMICOLON seq .  (reduce by rule 5)
+	type_dec : TYPE . ID EQ ID 
+	type_dec : TYPE . ID EQ ARRAY OF ID 
+
+	ID	shift 21
+
+
+	.	error
+
+
+state 15:
+
+	var_dec : VAR . ID COLON ID ASSIGN exp 
+	var_dec : VAR . ID ASSIGN exp 
+
+	ID	shift 22
+
+
+	.	error
+
+
+state 16:
+
+	exp : LPAREN seq . RPAREN 
+
+	RPAREN	shift 23
+
+
+	.	error
+
+
+state 17:
+
+	seq : exp . SEMICOLON seq 
+	seq : exp .  (reduce by rule 11)
+
+	SEMICOLON	shift 24
+
+
+	.	reduce by rule 11
+
+
+state 18:
+
+	arr_exp : ID LBRACK . exp RBRACK OF exp 
+
+	ID	shift 9
+	INT	shift 8
+	STRING	shift 7
+	LPAREN	shift 6
+	LET	shift 5
+	NIL	shift 4
+
+	exp	goto 25
+	arr_exp	goto 2
+	let'	goto 1
+
+	.	error
+
+
+state 19:
+
+	decs : dec decs .  (reduce by rule 12)
+
+
+
+	.	reduce by rule 12
+
+
+state 20:
+
+	let' : LET decs IN . seq END 
+
+	ID	shift 9
+	INT	shift 8
+	STRING	shift 7
+	LPAREN	shift 6
+	LET	shift 5
+	NIL	shift 4
+
+	exp	goto 17
+	arr_exp	goto 2
+	seq	goto 26
+	let'	goto 1
+
+	.	error
+
+
+state 21:
+
+	type_dec : TYPE ID . EQ ID 
+	type_dec : TYPE ID . EQ ARRAY OF ID 
+
+	EQ	shift 27
+
+
+	.	error
+
+
+state 22:
+
+	var_dec : VAR ID . COLON ID ASSIGN exp 
+	var_dec : VAR ID . ASSIGN exp 
+
+	COLON	shift 29
+	ASSIGN	shift 28
+
+
+	.	error
+
+
+state 23:
+
+	exp : LPAREN seq RPAREN .  (reduce by rule 5)
 
 
 
 	.	reduce by rule 5
 
 
-state 11:
+state 24:
+
+	seq : exp SEMICOLON . seq 
+
+	ID	shift 9
+	INT	shift 8
+	STRING	shift 7
+	LPAREN	shift 6
+	LET	shift 5
+	NIL	shift 4
+
+	exp	goto 17
+	arr_exp	goto 2
+	seq	goto 30
+	let'	goto 1
+
+	.	error
+
+
+state 25:
+
+	arr_exp : ID LBRACK exp . RBRACK OF exp 
+
+	RBRACK	shift 31
+
+
+	.	error
+
+
+state 26:
+
+	let' : LET decs IN seq . END 
+
+	END	shift 32
+
+
+	.	error
+
+
+state 27:
+
+	type_dec : TYPE ID EQ . ID 
+	type_dec : TYPE ID EQ . ARRAY OF ID 
+
+	ID	shift 34
+	ARRAY	shift 33
+
+
+	.	error
+
+
+state 28:
+
+	var_dec : VAR ID ASSIGN . exp 
+
+	ID	shift 9
+	INT	shift 8
+	STRING	shift 7
+	LPAREN	shift 6
+	LET	shift 5
+	NIL	shift 4
+
+	exp	goto 35
+	arr_exp	goto 2
+	let'	goto 1
+
+	.	error
+
+
+state 29:
+
+	var_dec : VAR ID COLON . ID ASSIGN exp 
+
+	ID	shift 36
+
+
+	.	error
+
+
+state 30:
+
+	seq : exp SEMICOLON seq .  (reduce by rule 10)
+
+
+
+	.	reduce by rule 10
+
+
+state 31:
+
+	arr_exp : ID LBRACK exp RBRACK . OF exp 
+
+	OF	shift 37
+
+
+	.	error
+
+
+state 32:
+
+	let' : LET decs IN seq END .  (reduce by rule 9)
+
+
+
+	.	reduce by rule 9
+
+
+state 33:
+
+	type_dec : TYPE ID EQ ARRAY . OF ID 
+
+	OF	shift 38
+
+
+	.	error
+
+
+state 34:
+
+	type_dec : TYPE ID EQ ID .  (reduce by rule 18)
+
+
+
+	.	reduce by rule 18
+
+
+state 35:
+
+	var_dec : VAR ID ASSIGN exp .  (reduce by rule 17)
+
+
+
+	.	reduce by rule 17
+
+
+state 36:
+
+	var_dec : VAR ID COLON ID . ASSIGN exp 
+
+	ASSIGN	shift 39
+
+
+	.	error
+
+
+state 37:
+
+	arr_exp : ID LBRACK exp RBRACK OF . exp 
+
+	ID	shift 9
+	INT	shift 8
+	STRING	shift 7
+	LPAREN	shift 6
+	LET	shift 5
+	NIL	shift 4
+
+	exp	goto 40
+	arr_exp	goto 2
+	let'	goto 1
+
+	.	error
+
+
+state 38:
+
+	type_dec : TYPE ID EQ ARRAY OF . ID 
+
+	ID	shift 41
+
+
+	.	error
+
+
+state 39:
+
+	var_dec : VAR ID COLON ID ASSIGN . exp 
+
+	ID	shift 9
+	INT	shift 8
+	STRING	shift 7
+	LPAREN	shift 6
+	LET	shift 5
+	NIL	shift 4
+
+	exp	goto 42
+	arr_exp	goto 2
+	let'	goto 1
+
+	.	error
+
+
+state 40:
+
+	arr_exp : ID LBRACK exp RBRACK OF exp .  (reduce by rule 8)
+
+
+
+	.	reduce by rule 8
+
+
+state 41:
+
+	type_dec : TYPE ID EQ ARRAY OF ID .  (reduce by rule 19)
+
+
+
+	.	reduce by rule 19
+
+
+state 42:
+
+	var_dec : VAR ID COLON ID ASSIGN exp .  (reduce by rule 16)
+
+
+
+	.	reduce by rule 16
+
+
+state 43:
 
 
 	EOF	accept
@@ -127,5 +508,5 @@ state 11:
 
 	.	error
 
-7 of 27 action table entries left after compaction
-6 goto table entries
+29 of 115 action table entries left after compaction
+36 goto table entries

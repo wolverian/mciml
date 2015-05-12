@@ -1,4 +1,5 @@
 structure A = Absyn
+val symbol = Symbol.symbol
 
 %%
 %term
@@ -14,7 +15,13 @@ structure A = Absyn
   | FUNCTION | VAR | TYPE
 
 %nonterm  exp of A.exp
-        | seq of        (A.exp * A.pos) list
+        | arr_exp of A.exp
+        | seq of (A.exp * A.pos) list
+        | let' of A.exp
+        | decs of A.dec list
+        | dec of A.dec
+        | type_dec of A.dec
+        | var_dec of A.dec
         | program of A.exp
 
 %pos int
@@ -46,7 +53,45 @@ program	: exp           (exp)
 exp : NIL               (A.NilExp)
     | INT               (A.IntExp INT)
     | STRING            (A.StringExp (STRING, STRINGleft))
+    | ID                (A.VarExp (A.SimpleVar (symbol ID, IDleft)))
     | LPAREN seq RPAREN (A.SeqExp seq)
+    | let'              (let')
+    | arr_exp           (arr_exp)
 
-seq : exp SEMICOLON seq ((exp, expleft) :: seq)
-    | exp               ((exp, expleft) :: nil)
+arr_exp : ID LBRACK exp RBRACK OF exp (A.ArrayExp {typ = symbol ID,
+                                                   size = exp,
+                                                   init = exp,
+                                                   pos = IDleft})
+
+let' : LET decs IN seq END (A.LetExp {decs = decs,
+                                      body = A.SeqExp seq,
+                                      pos = LETleft})
+
+seq : exp SEMICOLON seq   ((exp, expleft) :: seq)
+    | exp                 ((exp, expleft) :: nil)
+
+decs : dec decs       (dec :: decs)
+     | dec            (dec :: nil)
+
+dec : type_dec (type_dec)
+    | var_dec  (var_dec)
+
+var_dec : VAR ID COLON ID ASSIGN exp (A.VarDec {name = symbol ID1,
+                                                escape = ref false,
+                                                typ = SOME (symbol ID2, ID2left),
+                                                init = exp,
+                                                pos = VARleft
+                                     })
+        | VAR ID ASSIGN exp (A.VarDec {name = symbol ID1,
+                                       escape = ref false,
+                                       typ = NONE,
+                                       init = exp,
+                                       pos = VARleft
+                            })
+
+type_dec : TYPE ID EQ ID (A.TypeDec [{name = symbol ID1,
+                                     ty = A.NameTy (Symbol.symbol ID2, ID2left),
+                                     pos = TYPEleft}])
+         | TYPE ID EQ ARRAY OF ID (A.TypeDec [{name = symbol ID1,
+                                               ty = A.ArrayTy (symbol ID2, ARRAYleft),
+                                               pos = TYPEleft}])
