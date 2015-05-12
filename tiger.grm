@@ -130,6 +130,10 @@ bin_op : exp EQ exp (A.OpExp {left = exp1,
                                  oper = A.TimesOp,
                                  right = exp2,
                                  pos = TIMESleft})
+       | exp GT exp (A.OpExp {left = exp1,
+                              oper = A.GtOp,
+                              right = exp2,
+                              pos = GTleft})
 
 seq : exp SEMICOLON seq   ((exp, expleft) :: seq)
     | exp                 ((exp, expleft) :: nil)
