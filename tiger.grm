@@ -21,10 +21,14 @@ val symbol = Symbol.symbol
         | field_exp of (A.symbol * A.exp * A.pos)
         | seq of (A.exp * A.pos) list
         | let' of A.exp
+        | if' of A.exp
+        | funcall of A.exp
+        | bin_op of A.exp
         | decs of A.dec list
         | dec of A.dec
         | type_dec of A.dec
         | var_dec of A.dec
+        | fun_dec of A.dec
         | field_decs of A.field list
         | field_dec of A.field
         | assign of A.exp
@@ -43,7 +47,7 @@ val symbol = Symbol.symbol
 
 %prefer THEN ELSE LPAREN
 
-%nonassoc IF ELSE WHILE DO FOR LET IN END OF
+%nonassoc IF THEN ELSE WHILE DO FOR LET IN END OF FUNCTION ASSIGN
 %nonassoc EQ NEQ LT LE GT GE
 %left PLUS MINUS
 %left TIMES DIVIDE
@@ -62,8 +66,11 @@ exp : NIL               (A.NilExp)
     | ID                (A.VarExp (A.SimpleVar (symbol ID, IDleft)))
     | LPAREN seq RPAREN (A.SeqExp seq)
     | let'              (let')
+    | if'               (if')
+    | bin_op            (bin_op)
     | arr_exp           (arr_exp)
     | rec_exp           (rec_exp)
+    | funcall           (funcall)
     | assign            (assign)
 
 assign : ID ASSIGN exp (A.AssignExp {var = A.SimpleVar (symbol ID, IDleft),
@@ -89,9 +96,31 @@ field_exps : field_exp COMMA field_exps (field_exp :: field_exps)
 
 field_exp : ID EQ exp ((symbol ID, exp, IDleft))
 
+funcall : ID LPAREN seq RPAREN (A.CallExp {func = symbol ID,
+                                           args = List.map #1 seq,
+                                           pos = IDleft})
+
 let' : LET decs IN seq END (A.LetExp {decs = decs,
                                       body = A.SeqExp seq,
                                       pos = LETleft})
+
+if' : IF exp THEN exp ELSE exp (A.IfExp {test = exp1,
+                                         then' = exp2,
+                                         else' = SOME exp3,
+                                         pos = IFleft})
+
+bin_op : exp EQ exp (A.OpExp {left = exp1,
+                              oper = A.EqOp,
+                              right = exp2,
+                              pos = EQleft})
+       | exp MINUS exp (A.OpExp {left = exp1,
+                                 oper = A.MinusOp,
+                                 right = exp2,
+                                 pos = MINUSleft})
+       | exp TIMES exp (A.OpExp {left = exp1,
+                                 oper = A.TimesOp,
+                                 right = exp2,
+                                 pos = TIMESleft})
 
 seq : exp SEMICOLON seq   ((exp, expleft) :: seq)
     | exp                 ((exp, expleft) :: nil)
@@ -101,6 +130,7 @@ decs : dec decs       (dec :: decs)
 
 dec : type_dec (type_dec)
     | var_dec  (var_dec)
+    | fun_dec  (fun_dec)
 
 var_dec : VAR ID COLON ID ASSIGN exp (A.VarDec {name = symbol ID1,
                                                 escape = ref false,
@@ -132,3 +162,14 @@ field_dec : ID COLON ID ({name = symbol ID1,
                           escape = ref false,
                           typ = symbol ID2,
                           pos = ID1left})
+
+fun_dec : FUNCTION ID LPAREN field_decs RPAREN EQ exp (A.FunctionDec [{name = symbol ID,
+                                                                       params = field_decs,
+                                                                       result = NONE,
+                                                                       body = exp,
+                                                                       pos = FUNCTIONleft}])
+        | FUNCTION ID LPAREN field_decs RPAREN COLON ID EQ exp (A.FunctionDec [{name = symbol ID1,
+                                                                                params = field_decs,
+                                                                                result = SOME (symbol ID2, ID2left),
+                                                                                body = exp,
+                                                                                pos = FUNCTIONleft}])
