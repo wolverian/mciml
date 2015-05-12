@@ -20,6 +20,8 @@ val symbol = Symbol.symbol
         | field_exps of (A.symbol * A.exp * A.pos) list
         | field_exp of (A.symbol * A.exp * A.pos)
         | seq of (A.exp * A.pos) list
+        | params of A.exp list
+        | param of A.exp
         | let' of A.exp
         | if' of A.exp
         | funcall of A.exp
@@ -96,9 +98,12 @@ field_exps : field_exp COMMA field_exps (field_exp :: field_exps)
 
 field_exp : ID EQ exp ((symbol ID, exp, IDleft))
 
-funcall : ID LPAREN seq RPAREN (A.CallExp {func = symbol ID,
-                                           args = List.map #1 seq,
-                                           pos = IDleft})
+funcall : ID LPAREN params RPAREN (A.CallExp {func = symbol ID,
+                                              args = params,
+                                              pos = IDleft})
+
+params : exp COMMA params (exp :: params)
+       | exp              (exp :: nil)
 
 let' : LET decs IN seq END (A.LetExp {decs = decs,
                                       body = A.SeqExp seq,
@@ -117,6 +122,10 @@ bin_op : exp EQ exp (A.OpExp {left = exp1,
                                  oper = A.MinusOp,
                                  right = exp2,
                                  pos = MINUSleft})
+       | exp PLUS exp (A.OpExp {left = exp1,
+                                oper = A.PlusOp,
+                                right = exp2,
+                                pos = PLUSleft})
        | exp TIMES exp (A.OpExp {left = exp1,
                                  oper = A.TimesOp,
                                  right = exp2,

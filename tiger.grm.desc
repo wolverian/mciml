@@ -19,7 +19,7 @@ state 0:
 	funcall	goto 3
 	bin_op	goto 2
 	assign	goto 1
-	program	goto 99
+	program	goto 104
 
 	.	error
 
@@ -91,9 +91,11 @@ state 8:
 
 	bin_op : exp . EQ exp 
 	bin_op : exp . MINUS exp 
+	bin_op : exp . PLUS exp 
 	bin_op : exp . TIMES exp 
 	program : exp .  (reduce by rule 0)
 
+	PLUS	shift 19
 	MINUS	shift 18
 	TIMES	shift 17
 	EQ	shift 16
@@ -115,15 +117,15 @@ state 10:
 
 	let' : LET . decs IN seq END 
 
-	FUNCTION	shift 26
-	VAR	shift 25
-	TYPE	shift 24
+	FUNCTION	shift 27
+	VAR	shift 26
+	TYPE	shift 25
 
-	decs	goto 23
-	dec	goto 22
-	type_dec	goto 21
-	var_dec	goto 20
-	fun_dec	goto 19
+	decs	goto 24
+	dec	goto 23
+	type_dec	goto 22
+	var_dec	goto 21
+	fun_dec	goto 20
 
 	.	error
 
@@ -140,7 +142,7 @@ state 11:
 	LET	shift 10
 	NIL	shift 9
 
-	exp	goto 27
+	exp	goto 28
 	arr_exp	goto 7
 	rec_exp	goto 6
 	let'	goto 5
@@ -164,10 +166,10 @@ state 12:
 	LET	shift 10
 	NIL	shift 9
 
-	exp	goto 29
+	exp	goto 30
 	arr_exp	goto 7
 	rec_exp	goto 6
-	seq	goto 28
+	seq	goto 29
 	let'	goto 5
 	if'	goto 4
 	funcall	goto 3
@@ -200,15 +202,15 @@ state 15:
 	exp : ID .  (reduce by rule 4)
 	arr_exp : ID . LBRACK exp RBRACK OF exp 
 	rec_exp : ID . LBRACE field_exps RBRACE 
-	funcall : ID . LPAREN seq RPAREN 
+	funcall : ID . LPAREN params RPAREN 
 	assign : ID . ASSIGN exp 
 	assign : ID . DOT ID ASSIGN exp 
 
-	LPAREN	shift 34
-	LBRACK	shift 33
-	LBRACE	shift 32
-	DOT	shift 31
-	ASSIGN	shift 30
+	LPAREN	shift 35
+	LBRACK	shift 34
+	LBRACE	shift 33
+	DOT	shift 32
+	ASSIGN	shift 31
 
 
 	.	reduce by rule 4
@@ -226,7 +228,7 @@ state 16:
 	LET	shift 10
 	NIL	shift 9
 
-	exp	goto 35
+	exp	goto 36
 	arr_exp	goto 7
 	rec_exp	goto 6
 	let'	goto 5
@@ -250,7 +252,7 @@ state 17:
 	LET	shift 10
 	NIL	shift 9
 
-	exp	goto 36
+	exp	goto 37
 	arr_exp	goto 7
 	rec_exp	goto 6
 	let'	goto 5
@@ -274,7 +276,7 @@ state 18:
 	LET	shift 10
 	NIL	shift 9
 
-	exp	goto 37
+	exp	goto 38
 	arr_exp	goto 7
 	rec_exp	goto 6
 	let'	goto 5
@@ -288,66 +290,78 @@ state 18:
 
 state 19:
 
-	dec : fun_dec .  (reduce by rule 32)
+	bin_op : exp PLUS . exp 
 
+	ID	shift 15
+	INT	shift 14
+	STRING	shift 13
+	LPAREN	shift 12
+	IF	shift 11
+	LET	shift 10
+	NIL	shift 9
 
-
-	.	reduce by rule 32
-
-
-state 20:
-
-	dec : var_dec .  (reduce by rule 31)
-
-
-
-	.	reduce by rule 31
-
-
-state 21:
-
-	dec : type_dec .  (reduce by rule 30)
-
-
-
-	.	reduce by rule 30
-
-
-state 22:
-
-	decs : dec . decs 
-	decs : dec .  (reduce by rule 29)
-
-	FUNCTION	shift 26
-	VAR	shift 25
-	TYPE	shift 24
-
-	decs	goto 38
-	dec	goto 22
-	type_dec	goto 21
-	var_dec	goto 20
-	fun_dec	goto 19
-
-	.	reduce by rule 29
-
-
-state 23:
-
-	let' : LET decs . IN seq END 
-
-	IN	shift 39
-
+	exp	goto 39
+	arr_exp	goto 7
+	rec_exp	goto 6
+	let'	goto 5
+	if'	goto 4
+	funcall	goto 3
+	bin_op	goto 2
+	assign	goto 1
 
 	.	error
 
 
+state 20:
+
+	dec : fun_dec .  (reduce by rule 35)
+
+
+
+	.	reduce by rule 35
+
+
+state 21:
+
+	dec : var_dec .  (reduce by rule 34)
+
+
+
+	.	reduce by rule 34
+
+
+state 22:
+
+	dec : type_dec .  (reduce by rule 33)
+
+
+
+	.	reduce by rule 33
+
+
+state 23:
+
+	decs : dec . decs 
+	decs : dec .  (reduce by rule 32)
+
+	FUNCTION	shift 27
+	VAR	shift 26
+	TYPE	shift 25
+
+	decs	goto 40
+	dec	goto 23
+	type_dec	goto 22
+	var_dec	goto 21
+	fun_dec	goto 20
+
+	.	reduce by rule 32
+
+
 state 24:
 
-	type_dec : TYPE . ID EQ ID 
-	type_dec : TYPE . ID EQ ARRAY OF ID 
-	type_dec : TYPE . ID EQ LBRACE field_decs RBRACE 
+	let' : LET decs . IN seq END 
 
-	ID	shift 40
+	IN	shift 41
 
 
 	.	error
@@ -355,19 +369,9 @@ state 24:
 
 state 25:
 
-	var_dec : VAR . ID COLON ID ASSIGN exp 
-	var_dec : VAR . ID ASSIGN exp 
-
-	ID	shift 41
-
-
-	.	error
-
-
-state 26:
-
-	fun_dec : FUNCTION . ID LPAREN field_decs RPAREN EQ exp 
-	fun_dec : FUNCTION . ID LPAREN field_decs RPAREN COLON ID EQ exp 
+	type_dec : TYPE . ID EQ ID 
+	type_dec : TYPE . ID EQ ARRAY OF ID 
+	type_dec : TYPE . ID EQ LBRACE field_decs RBRACE 
 
 	ID	shift 42
 
@@ -375,17 +379,23 @@ state 26:
 	.	error
 
 
+state 26:
+
+	var_dec : VAR . ID COLON ID ASSIGN exp 
+	var_dec : VAR . ID ASSIGN exp 
+
+	ID	shift 43
+
+
+	.	error
+
+
 state 27:
 
-	if' : IF exp . THEN exp ELSE exp 
-	bin_op : exp . EQ exp 
-	bin_op : exp . MINUS exp 
-	bin_op : exp . TIMES exp 
+	fun_dec : FUNCTION . ID LPAREN field_decs RPAREN EQ exp 
+	fun_dec : FUNCTION . ID LPAREN field_decs RPAREN COLON ID EQ exp 
 
-	MINUS	shift 18
-	TIMES	shift 17
-	EQ	shift 16
-	THEN	shift 43
+	ID	shift 44
 
 
 	.	error
@@ -393,9 +403,17 @@ state 27:
 
 state 28:
 
-	exp : LPAREN seq . RPAREN 
+	if' : IF exp . THEN exp ELSE exp 
+	bin_op : exp . EQ exp 
+	bin_op : exp . MINUS exp 
+	bin_op : exp . PLUS exp 
+	bin_op : exp . TIMES exp 
 
-	RPAREN	shift 44
+	PLUS	shift 19
+	MINUS	shift 18
+	TIMES	shift 17
+	EQ	shift 16
+	THEN	shift 45
 
 
 	.	error
@@ -403,22 +421,34 @@ state 28:
 
 state 29:
 
+	exp : LPAREN seq . RPAREN 
+
+	RPAREN	shift 46
+
+
+	.	error
+
+
+state 30:
+
 	seq : exp . SEMICOLON seq 
-	seq : exp .  (reduce by rule 27)
+	seq : exp .  (reduce by rule 30)
 	bin_op : exp . EQ exp 
 	bin_op : exp . MINUS exp 
+	bin_op : exp . PLUS exp 
 	bin_op : exp . TIMES exp 
 
-	SEMICOLON	shift 45
+	SEMICOLON	shift 47
+	PLUS	shift 19
 	MINUS	shift 18
 	TIMES	shift 17
 	EQ	shift 16
 
 
-	.	reduce by rule 27
+	.	reduce by rule 30
 
 
-state 30:
+state 31:
 
 	assign : ID ASSIGN . exp 
 
@@ -430,7 +460,7 @@ state 30:
 	LET	shift 10
 	NIL	shift 9
 
-	exp	goto 46
+	exp	goto 48
 	arr_exp	goto 7
 	rec_exp	goto 6
 	let'	goto 5
@@ -442,29 +472,29 @@ state 30:
 	.	error
 
 
-state 31:
+state 32:
 
 	assign : ID DOT . ID ASSIGN exp 
 
-	ID	shift 47
+	ID	shift 49
 
-
-	.	error
-
-
-state 32:
-
-	rec_exp : ID LBRACE . field_exps RBRACE 
-
-	ID	shift 50
-
-	field_exps	goto 49
-	field_exp	goto 48
 
 	.	error
 
 
 state 33:
+
+	rec_exp : ID LBRACE . field_exps RBRACE 
+
+	ID	shift 52
+
+	field_exps	goto 51
+	field_exp	goto 50
+
+	.	error
+
+
+state 34:
 
 	arr_exp : ID LBRACK . exp RBRACK OF exp 
 
@@ -476,34 +506,9 @@ state 33:
 	LET	shift 10
 	NIL	shift 9
 
-	exp	goto 51
+	exp	goto 53
 	arr_exp	goto 7
 	rec_exp	goto 6
-	let'	goto 5
-	if'	goto 4
-	funcall	goto 3
-	bin_op	goto 2
-	assign	goto 1
-
-	.	error
-
-
-state 34:
-
-	funcall : ID LPAREN . seq RPAREN 
-
-	ID	shift 15
-	INT	shift 14
-	STRING	shift 13
-	LPAREN	shift 12
-	IF	shift 11
-	LET	shift 10
-	NIL	shift 9
-
-	exp	goto 29
-	arr_exp	goto 7
-	rec_exp	goto 6
-	seq	goto 52
 	let'	goto 5
 	if'	goto 4
 	funcall	goto 3
@@ -515,27 +520,25 @@ state 34:
 
 state 35:
 
-	bin_op : exp . EQ exp 
-	bin_op : exp EQ exp .  (reduce by rule 23)
-	bin_op : exp . MINUS exp 
-	bin_op : exp . TIMES exp 
+	funcall : ID LPAREN . params RPAREN 
 
-	EOF	reduce by rule 23
-	COMMA	reduce by rule 23
-	SEMICOLON	reduce by rule 23
-	RPAREN	reduce by rule 23
-	RBRACK	reduce by rule 23
-	RBRACE	reduce by rule 23
-	MINUS	shift 18
-	TIMES	shift 17
-	THEN	reduce by rule 23
-	ELSE	reduce by rule 23
-	IN	reduce by rule 23
-	END	reduce by rule 23
-	FUNCTION	reduce by rule 23
-	VAR	reduce by rule 23
-	TYPE	reduce by rule 23
+	ID	shift 15
+	INT	shift 14
+	STRING	shift 13
+	LPAREN	shift 12
+	IF	shift 11
+	LET	shift 10
+	NIL	shift 9
 
+	exp	goto 55
+	arr_exp	goto 7
+	rec_exp	goto 6
+	params	goto 54
+	let'	goto 5
+	if'	goto 4
+	funcall	goto 3
+	bin_op	goto 2
+	assign	goto 1
 
 	.	error
 
@@ -543,38 +546,83 @@ state 35:
 state 36:
 
 	bin_op : exp . EQ exp 
+	bin_op : exp EQ exp .  (reduce by rule 25)
 	bin_op : exp . MINUS exp 
+	bin_op : exp . PLUS exp 
 	bin_op : exp . TIMES exp 
-	bin_op : exp TIMES exp .  (reduce by rule 25)
+
+	EOF	reduce by rule 25
+	COMMA	reduce by rule 25
+	SEMICOLON	reduce by rule 25
+	RPAREN	reduce by rule 25
+	RBRACK	reduce by rule 25
+	RBRACE	reduce by rule 25
+	PLUS	shift 19
+	MINUS	shift 18
+	TIMES	shift 17
+	THEN	reduce by rule 25
+	ELSE	reduce by rule 25
+	IN	reduce by rule 25
+	END	reduce by rule 25
+	FUNCTION	reduce by rule 25
+	VAR	reduce by rule 25
+	TYPE	reduce by rule 25
 
 
-
-	.	reduce by rule 25
+	.	error
 
 
 state 37:
 
 	bin_op : exp . EQ exp 
 	bin_op : exp . MINUS exp 
-	bin_op : exp MINUS exp .  (reduce by rule 24)
+	bin_op : exp . PLUS exp 
 	bin_op : exp . TIMES exp 
-
-	TIMES	shift 17
-
-
-	.	reduce by rule 24
-
-
-state 38:
-
-	decs : dec decs .  (reduce by rule 28)
+	bin_op : exp TIMES exp .  (reduce by rule 28)
 
 
 
 	.	reduce by rule 28
 
 
+state 38:
+
+	bin_op : exp . EQ exp 
+	bin_op : exp . MINUS exp 
+	bin_op : exp MINUS exp .  (reduce by rule 26)
+	bin_op : exp . PLUS exp 
+	bin_op : exp . TIMES exp 
+
+	TIMES	shift 17
+
+
+	.	reduce by rule 26
+
+
 state 39:
+
+	bin_op : exp . EQ exp 
+	bin_op : exp . MINUS exp 
+	bin_op : exp . PLUS exp 
+	bin_op : exp PLUS exp .  (reduce by rule 27)
+	bin_op : exp . TIMES exp 
+
+	TIMES	shift 17
+
+
+	.	reduce by rule 27
+
+
+state 40:
+
+	decs : dec decs .  (reduce by rule 31)
+
+
+
+	.	reduce by rule 31
+
+
+state 41:
 
 	let' : LET decs IN . seq END 
 
@@ -586,10 +634,10 @@ state 39:
 	LET	shift 10
 	NIL	shift 9
 
-	exp	goto 29
+	exp	goto 30
 	arr_exp	goto 7
 	rec_exp	goto 6
-	seq	goto 53
+	seq	goto 56
 	let'	goto 5
 	if'	goto 4
 	funcall	goto 3
@@ -599,42 +647,42 @@ state 39:
 	.	error
 
 
-state 40:
+state 42:
 
 	type_dec : TYPE ID . EQ ID 
 	type_dec : TYPE ID . EQ ARRAY OF ID 
 	type_dec : TYPE ID . EQ LBRACE field_decs RBRACE 
 
-	EQ	shift 54
-
-
-	.	error
-
-
-state 41:
-
-	var_dec : VAR ID . COLON ID ASSIGN exp 
-	var_dec : VAR ID . ASSIGN exp 
-
-	COLON	shift 56
-	ASSIGN	shift 55
-
-
-	.	error
-
-
-state 42:
-
-	fun_dec : FUNCTION ID . LPAREN field_decs RPAREN EQ exp 
-	fun_dec : FUNCTION ID . LPAREN field_decs RPAREN COLON ID EQ exp 
-
-	LPAREN	shift 57
+	EQ	shift 57
 
 
 	.	error
 
 
 state 43:
+
+	var_dec : VAR ID . COLON ID ASSIGN exp 
+	var_dec : VAR ID . ASSIGN exp 
+
+	COLON	shift 59
+	ASSIGN	shift 58
+
+
+	.	error
+
+
+state 44:
+
+	fun_dec : FUNCTION ID . LPAREN field_decs RPAREN EQ exp 
+	fun_dec : FUNCTION ID . LPAREN field_decs RPAREN COLON ID EQ exp 
+
+	LPAREN	shift 60
+
+
+	.	error
+
+
+state 45:
 
 	if' : IF exp THEN . exp ELSE exp 
 
@@ -646,43 +694,9 @@ state 43:
 	LET	shift 10
 	NIL	shift 9
 
-	exp	goto 58
+	exp	goto 61
 	arr_exp	goto 7
 	rec_exp	goto 6
-	let'	goto 5
-	if'	goto 4
-	funcall	goto 3
-	bin_op	goto 2
-	assign	goto 1
-
-	.	error
-
-
-state 44:
-
-	exp : LPAREN seq RPAREN .  (reduce by rule 5)
-
-
-
-	.	reduce by rule 5
-
-
-state 45:
-
-	seq : exp SEMICOLON . seq 
-
-	ID	shift 15
-	INT	shift 14
-	STRING	shift 13
-	LPAREN	shift 12
-	IF	shift 11
-	LET	shift 10
-	NIL	shift 9
-
-	exp	goto 29
-	arr_exp	goto 7
-	rec_exp	goto 6
-	seq	goto 59
 	let'	goto 5
 	if'	goto 4
 	funcall	goto 3
@@ -694,11 +708,47 @@ state 45:
 
 state 46:
 
+	exp : LPAREN seq RPAREN .  (reduce by rule 5)
+
+
+
+	.	reduce by rule 5
+
+
+state 47:
+
+	seq : exp SEMICOLON . seq 
+
+	ID	shift 15
+	INT	shift 14
+	STRING	shift 13
+	LPAREN	shift 12
+	IF	shift 11
+	LET	shift 10
+	NIL	shift 9
+
+	exp	goto 30
+	arr_exp	goto 7
+	rec_exp	goto 6
+	seq	goto 62
+	let'	goto 5
+	if'	goto 4
+	funcall	goto 3
+	bin_op	goto 2
+	assign	goto 1
+
+	.	error
+
+
+state 48:
+
 	bin_op : exp . EQ exp 
 	bin_op : exp . MINUS exp 
+	bin_op : exp . PLUS exp 
 	bin_op : exp . TIMES exp 
 	assign : ID ASSIGN exp .  (reduce by rule 13)
 
+	PLUS	shift 19
 	MINUS	shift 18
 	TIMES	shift 17
 	EQ	shift 16
@@ -707,32 +757,11 @@ state 46:
 	.	reduce by rule 13
 
 
-state 47:
+state 49:
 
 	assign : ID DOT ID . ASSIGN exp 
 
-	ASSIGN	shift 60
-
-
-	.	error
-
-
-state 48:
-
-	field_exps : field_exp . COMMA field_exps 
-	field_exps : field_exp .  (reduce by rule 18)
-
-	COMMA	shift 61
-
-
-	.	reduce by rule 18
-
-
-state 49:
-
-	rec_exp : ID LBRACE field_exps . RBRACE 
-
-	RBRACE	shift 62
+	ASSIGN	shift 63
 
 
 	.	error
@@ -740,22 +769,45 @@ state 49:
 
 state 50:
 
-	field_exp : ID . EQ exp 
+	field_exps : field_exp . COMMA field_exps 
+	field_exps : field_exp .  (reduce by rule 18)
 
-	EQ	shift 63
+	COMMA	shift 64
+
+
+	.	reduce by rule 18
+
+
+state 51:
+
+	rec_exp : ID LBRACE field_exps . RBRACE 
+
+	RBRACE	shift 65
 
 
 	.	error
 
 
-state 51:
+state 52:
+
+	field_exp : ID . EQ exp 
+
+	EQ	shift 66
+
+
+	.	error
+
+
+state 53:
 
 	arr_exp : ID LBRACK exp . RBRACK OF exp 
 	bin_op : exp . EQ exp 
 	bin_op : exp . MINUS exp 
+	bin_op : exp . PLUS exp 
 	bin_op : exp . TIMES exp 
 
-	RBRACK	shift 64
+	RBRACK	shift 67
+	PLUS	shift 19
 	MINUS	shift 18
 	TIMES	shift 17
 	EQ	shift 16
@@ -764,41 +816,60 @@ state 51:
 	.	error
 
 
-state 52:
-
-	funcall : ID LPAREN seq . RPAREN 
-
-	RPAREN	shift 65
-
-
-	.	error
-
-
-state 53:
-
-	let' : LET decs IN seq . END 
-
-	END	shift 66
-
-
-	.	error
-
-
 state 54:
 
-	type_dec : TYPE ID EQ . ID 
-	type_dec : TYPE ID EQ . ARRAY OF ID 
-	type_dec : TYPE ID EQ . LBRACE field_decs RBRACE 
+	funcall : ID LPAREN params . RPAREN 
 
-	ID	shift 69
-	LBRACE	shift 68
-	ARRAY	shift 67
+	RPAREN	shift 68
 
 
 	.	error
 
 
 state 55:
+
+	params : exp . COMMA params 
+	params : exp .  (reduce by rule 22)
+	bin_op : exp . EQ exp 
+	bin_op : exp . MINUS exp 
+	bin_op : exp . PLUS exp 
+	bin_op : exp . TIMES exp 
+
+	COMMA	shift 69
+	PLUS	shift 19
+	MINUS	shift 18
+	TIMES	shift 17
+	EQ	shift 16
+
+
+	.	reduce by rule 22
+
+
+state 56:
+
+	let' : LET decs IN seq . END 
+
+	END	shift 70
+
+
+	.	error
+
+
+state 57:
+
+	type_dec : TYPE ID EQ . ID 
+	type_dec : TYPE ID EQ . ARRAY OF ID 
+	type_dec : TYPE ID EQ . LBRACE field_decs RBRACE 
+
+	ID	shift 73
+	LBRACE	shift 72
+	ARRAY	shift 71
+
+
+	.	error
+
+
+state 58:
 
 	var_dec : VAR ID ASSIGN . exp 
 
@@ -810,7 +881,7 @@ state 55:
 	LET	shift 10
 	NIL	shift 9
 
-	exp	goto 70
+	exp	goto 74
 	arr_exp	goto 7
 	rec_exp	goto 6
 	let'	goto 5
@@ -822,55 +893,57 @@ state 55:
 	.	error
 
 
-state 56:
+state 59:
 
 	var_dec : VAR ID COLON . ID ASSIGN exp 
 
-	ID	shift 71
+	ID	shift 75
 
 
 	.	error
 
 
-state 57:
+state 60:
 
 	fun_dec : FUNCTION ID LPAREN . field_decs RPAREN EQ exp 
 	fun_dec : FUNCTION ID LPAREN . field_decs RPAREN COLON ID EQ exp 
 
-	ID	shift 74
+	ID	shift 78
 
-	field_decs	goto 73
-	field_dec	goto 72
+	field_decs	goto 77
+	field_dec	goto 76
 
 	.	error
 
 
-state 58:
+state 61:
 
 	if' : IF exp THEN exp . ELSE exp 
 	bin_op : exp . EQ exp 
 	bin_op : exp . MINUS exp 
+	bin_op : exp . PLUS exp 
 	bin_op : exp . TIMES exp 
 
+	PLUS	shift 19
 	MINUS	shift 18
 	TIMES	shift 17
 	EQ	shift 16
-	ELSE	shift 75
+	ELSE	shift 79
 
 
 	.	error
 
 
-state 59:
+state 62:
 
-	seq : exp SEMICOLON seq .  (reduce by rule 26)
-
-
-
-	.	reduce by rule 26
+	seq : exp SEMICOLON seq .  (reduce by rule 29)
 
 
-state 60:
+
+	.	reduce by rule 29
+
+
+state 63:
 
 	assign : ID DOT ID ASSIGN . exp 
 
@@ -882,52 +955,7 @@ state 60:
 	LET	shift 10
 	NIL	shift 9
 
-	exp	goto 76
-	arr_exp	goto 7
-	rec_exp	goto 6
-	let'	goto 5
-	if'	goto 4
-	funcall	goto 3
-	bin_op	goto 2
-	assign	goto 1
-
-	.	error
-
-
-state 61:
-
-	field_exps : field_exp COMMA . field_exps 
-
-	ID	shift 50
-
-	field_exps	goto 77
-	field_exp	goto 48
-
-	.	error
-
-
-state 62:
-
-	rec_exp : ID LBRACE field_exps RBRACE .  (reduce by rule 16)
-
-
-
-	.	reduce by rule 16
-
-
-state 63:
-
-	field_exp : ID EQ . exp 
-
-	ID	shift 15
-	INT	shift 14
-	STRING	shift 13
-	LPAREN	shift 12
-	IF	shift 11
-	LET	shift 10
-	NIL	shift 9
-
-	exp	goto 78
+	exp	goto 80
 	arr_exp	goto 7
 	rec_exp	goto 6
 	let'	goto 5
@@ -941,123 +969,28 @@ state 63:
 
 state 64:
 
-	arr_exp : ID LBRACK exp RBRACK . OF exp 
+	field_exps : field_exp COMMA . field_exps 
 
-	OF	shift 79
+	ID	shift 52
 
+	field_exps	goto 81
+	field_exp	goto 50
 
 	.	error
 
 
 state 65:
 
-	funcall : ID LPAREN seq RPAREN .  (reduce by rule 20)
+	rec_exp : ID LBRACE field_exps RBRACE .  (reduce by rule 16)
 
 
 
-	.	reduce by rule 20
+	.	reduce by rule 16
 
 
 state 66:
 
-	let' : LET decs IN seq END .  (reduce by rule 21)
-
-
-
-	.	reduce by rule 21
-
-
-state 67:
-
-	type_dec : TYPE ID EQ ARRAY . OF ID 
-
-	OF	shift 80
-
-
-	.	error
-
-
-state 68:
-
-	type_dec : TYPE ID EQ LBRACE . field_decs RBRACE 
-
-	ID	shift 74
-
-	field_decs	goto 81
-	field_dec	goto 72
-
-	.	error
-
-
-state 69:
-
-	type_dec : TYPE ID EQ ID .  (reduce by rule 35)
-
-
-
-	.	reduce by rule 35
-
-
-state 70:
-
-	bin_op : exp . EQ exp 
-	bin_op : exp . MINUS exp 
-	bin_op : exp . TIMES exp 
-	var_dec : VAR ID ASSIGN exp .  (reduce by rule 34)
-
-	MINUS	shift 18
-	TIMES	shift 17
-	EQ	shift 16
-
-
-	.	reduce by rule 34
-
-
-state 71:
-
-	var_dec : VAR ID COLON ID . ASSIGN exp 
-
-	ASSIGN	shift 82
-
-
-	.	error
-
-
-state 72:
-
-	field_decs : field_dec . COMMA field_decs 
-	field_decs : field_dec .  (reduce by rule 39)
-
-	COMMA	shift 83
-
-
-	.	reduce by rule 39
-
-
-state 73:
-
-	fun_dec : FUNCTION ID LPAREN field_decs . RPAREN EQ exp 
-	fun_dec : FUNCTION ID LPAREN field_decs . RPAREN COLON ID EQ exp 
-
-	RPAREN	shift 84
-
-
-	.	error
-
-
-state 74:
-
-	field_dec : ID . COLON ID 
-
-	COLON	shift 85
-
-
-	.	error
-
-
-state 75:
-
-	if' : IF exp THEN exp ELSE . exp 
+	field_exp : ID EQ . exp 
 
 	ID	shift 15
 	INT	shift 14
@@ -1067,7 +1000,7 @@ state 75:
 	LET	shift 10
 	NIL	shift 9
 
-	exp	goto 86
+	exp	goto 82
 	arr_exp	goto 7
 	rec_exp	goto 6
 	let'	goto 5
@@ -1079,48 +1012,28 @@ state 75:
 	.	error
 
 
-state 76:
+state 67:
 
-	bin_op : exp . EQ exp 
-	bin_op : exp . MINUS exp 
-	bin_op : exp . TIMES exp 
-	assign : ID DOT ID ASSIGN exp .  (reduce by rule 14)
+	arr_exp : ID LBRACK exp RBRACK . OF exp 
 
-	MINUS	shift 18
-	TIMES	shift 17
-	EQ	shift 16
+	OF	shift 83
 
 
-	.	reduce by rule 14
+	.	error
 
 
-state 77:
+state 68:
 
-	field_exps : field_exp COMMA field_exps .  (reduce by rule 17)
+	funcall : ID LPAREN params RPAREN .  (reduce by rule 20)
 
 
 
-	.	reduce by rule 17
+	.	reduce by rule 20
 
 
-state 78:
+state 69:
 
-	field_exp : ID EQ exp .  (reduce by rule 19)
-	bin_op : exp . EQ exp 
-	bin_op : exp . MINUS exp 
-	bin_op : exp . TIMES exp 
-
-	MINUS	shift 18
-	TIMES	shift 17
-	EQ	shift 16
-
-
-	.	reduce by rule 19
-
-
-state 79:
-
-	arr_exp : ID LBRACK exp RBRACK OF . exp 
+	params : exp COMMA . params 
 
 	ID	shift 15
 	INT	shift 14
@@ -1130,7 +1043,131 @@ state 79:
 	LET	shift 10
 	NIL	shift 9
 
-	exp	goto 87
+	exp	goto 55
+	arr_exp	goto 7
+	rec_exp	goto 6
+	params	goto 84
+	let'	goto 5
+	if'	goto 4
+	funcall	goto 3
+	bin_op	goto 2
+	assign	goto 1
+
+	.	error
+
+
+state 70:
+
+	let' : LET decs IN seq END .  (reduce by rule 23)
+
+
+
+	.	reduce by rule 23
+
+
+state 71:
+
+	type_dec : TYPE ID EQ ARRAY . OF ID 
+
+	OF	shift 85
+
+
+	.	error
+
+
+state 72:
+
+	type_dec : TYPE ID EQ LBRACE . field_decs RBRACE 
+
+	ID	shift 78
+
+	field_decs	goto 86
+	field_dec	goto 76
+
+	.	error
+
+
+state 73:
+
+	type_dec : TYPE ID EQ ID .  (reduce by rule 38)
+
+
+
+	.	reduce by rule 38
+
+
+state 74:
+
+	bin_op : exp . EQ exp 
+	bin_op : exp . MINUS exp 
+	bin_op : exp . PLUS exp 
+	bin_op : exp . TIMES exp 
+	var_dec : VAR ID ASSIGN exp .  (reduce by rule 37)
+
+	PLUS	shift 19
+	MINUS	shift 18
+	TIMES	shift 17
+	EQ	shift 16
+
+
+	.	reduce by rule 37
+
+
+state 75:
+
+	var_dec : VAR ID COLON ID . ASSIGN exp 
+
+	ASSIGN	shift 87
+
+
+	.	error
+
+
+state 76:
+
+	field_decs : field_dec . COMMA field_decs 
+	field_decs : field_dec .  (reduce by rule 42)
+
+	COMMA	shift 88
+
+
+	.	reduce by rule 42
+
+
+state 77:
+
+	fun_dec : FUNCTION ID LPAREN field_decs . RPAREN EQ exp 
+	fun_dec : FUNCTION ID LPAREN field_decs . RPAREN COLON ID EQ exp 
+
+	RPAREN	shift 89
+
+
+	.	error
+
+
+state 78:
+
+	field_dec : ID . COLON ID 
+
+	COLON	shift 90
+
+
+	.	error
+
+
+state 79:
+
+	if' : IF exp THEN exp ELSE . exp 
+
+	ID	shift 15
+	INT	shift 14
+	STRING	shift 13
+	LPAREN	shift 12
+	IF	shift 11
+	LET	shift 10
+	NIL	shift 9
+
+	exp	goto 91
 	arr_exp	goto 7
 	rec_exp	goto 6
 	let'	goto 5
@@ -1144,27 +1181,50 @@ state 79:
 
 state 80:
 
-	type_dec : TYPE ID EQ ARRAY OF . ID 
+	bin_op : exp . EQ exp 
+	bin_op : exp . MINUS exp 
+	bin_op : exp . PLUS exp 
+	bin_op : exp . TIMES exp 
+	assign : ID DOT ID ASSIGN exp .  (reduce by rule 14)
 
-	ID	shift 88
+	PLUS	shift 19
+	MINUS	shift 18
+	TIMES	shift 17
+	EQ	shift 16
 
 
-	.	error
+	.	reduce by rule 14
 
 
 state 81:
 
-	type_dec : TYPE ID EQ LBRACE field_decs . RBRACE 
-
-	RBRACE	shift 89
+	field_exps : field_exp COMMA field_exps .  (reduce by rule 17)
 
 
-	.	error
+
+	.	reduce by rule 17
 
 
 state 82:
 
-	var_dec : VAR ID COLON ID ASSIGN . exp 
+	field_exp : ID EQ exp .  (reduce by rule 19)
+	bin_op : exp . EQ exp 
+	bin_op : exp . MINUS exp 
+	bin_op : exp . PLUS exp 
+	bin_op : exp . TIMES exp 
+
+	PLUS	shift 19
+	MINUS	shift 18
+	TIMES	shift 17
+	EQ	shift 16
+
+
+	.	reduce by rule 19
+
+
+state 83:
+
+	arr_exp : ID LBRACK exp RBRACK OF . exp 
 
 	ID	shift 15
 	INT	shift 14
@@ -1174,7 +1234,7 @@ state 82:
 	LET	shift 10
 	NIL	shift 9
 
-	exp	goto 90
+	exp	goto 92
 	arr_exp	goto 7
 	rec_exp	goto 6
 	let'	goto 5
@@ -1186,35 +1246,20 @@ state 82:
 	.	error
 
 
-state 83:
-
-	field_decs : field_dec COMMA . field_decs 
-
-	ID	shift 74
-
-	field_decs	goto 91
-	field_dec	goto 72
-
-	.	error
-
-
 state 84:
 
-	fun_dec : FUNCTION ID LPAREN field_decs RPAREN . EQ exp 
-	fun_dec : FUNCTION ID LPAREN field_decs RPAREN . COLON ID EQ exp 
-
-	COLON	shift 93
-	EQ	shift 92
+	params : exp COMMA params .  (reduce by rule 21)
 
 
-	.	error
+
+	.	reduce by rule 21
 
 
 state 85:
 
-	field_dec : ID COLON . ID 
+	type_dec : TYPE ID EQ ARRAY OF . ID 
 
-	ID	shift 94
+	ID	shift 93
 
 
 	.	error
@@ -1222,79 +1267,17 @@ state 85:
 
 state 86:
 
-	if' : IF exp THEN exp ELSE exp .  (reduce by rule 22)
-	bin_op : exp . EQ exp 
-	bin_op : exp . MINUS exp 
-	bin_op : exp . TIMES exp 
+	type_dec : TYPE ID EQ LBRACE field_decs . RBRACE 
 
-	MINUS	shift 18
-	TIMES	shift 17
-	EQ	shift 16
+	RBRACE	shift 94
 
 
-	.	reduce by rule 22
+	.	error
 
 
 state 87:
 
-	arr_exp : ID LBRACK exp RBRACK OF exp .  (reduce by rule 15)
-	bin_op : exp . EQ exp 
-	bin_op : exp . MINUS exp 
-	bin_op : exp . TIMES exp 
-
-	MINUS	shift 18
-	TIMES	shift 17
-	EQ	shift 16
-
-
-	.	reduce by rule 15
-
-
-state 88:
-
-	type_dec : TYPE ID EQ ARRAY OF ID .  (reduce by rule 36)
-
-
-
-	.	reduce by rule 36
-
-
-state 89:
-
-	type_dec : TYPE ID EQ LBRACE field_decs RBRACE .  (reduce by rule 37)
-
-
-
-	.	reduce by rule 37
-
-
-state 90:
-
-	bin_op : exp . EQ exp 
-	bin_op : exp . MINUS exp 
-	bin_op : exp . TIMES exp 
-	var_dec : VAR ID COLON ID ASSIGN exp .  (reduce by rule 33)
-
-	MINUS	shift 18
-	TIMES	shift 17
-	EQ	shift 16
-
-
-	.	reduce by rule 33
-
-
-state 91:
-
-	field_decs : field_dec COMMA field_decs .  (reduce by rule 38)
-
-
-
-	.	reduce by rule 38
-
-
-state 92:
-
-	fun_dec : FUNCTION ID LPAREN field_decs RPAREN EQ . exp 
+	var_dec : VAR ID COLON ID ASSIGN . exp 
 
 	ID	shift 15
 	INT	shift 14
@@ -1316,19 +1299,86 @@ state 92:
 	.	error
 
 
-state 93:
+state 88:
 
-	fun_dec : FUNCTION ID LPAREN field_decs RPAREN COLON . ID EQ exp 
+	field_decs : field_dec COMMA . field_decs 
 
-	ID	shift 96
+	ID	shift 78
+
+	field_decs	goto 96
+	field_dec	goto 76
+
+	.	error
+
+
+state 89:
+
+	fun_dec : FUNCTION ID LPAREN field_decs RPAREN . EQ exp 
+	fun_dec : FUNCTION ID LPAREN field_decs RPAREN . COLON ID EQ exp 
+
+	COLON	shift 98
+	EQ	shift 97
 
 
 	.	error
 
 
+state 90:
+
+	field_dec : ID COLON . ID 
+
+	ID	shift 99
+
+
+	.	error
+
+
+state 91:
+
+	if' : IF exp THEN exp ELSE exp .  (reduce by rule 24)
+	bin_op : exp . EQ exp 
+	bin_op : exp . MINUS exp 
+	bin_op : exp . PLUS exp 
+	bin_op : exp . TIMES exp 
+
+	PLUS	shift 19
+	MINUS	shift 18
+	TIMES	shift 17
+	EQ	shift 16
+
+
+	.	reduce by rule 24
+
+
+state 92:
+
+	arr_exp : ID LBRACK exp RBRACK OF exp .  (reduce by rule 15)
+	bin_op : exp . EQ exp 
+	bin_op : exp . MINUS exp 
+	bin_op : exp . PLUS exp 
+	bin_op : exp . TIMES exp 
+
+	PLUS	shift 19
+	MINUS	shift 18
+	TIMES	shift 17
+	EQ	shift 16
+
+
+	.	reduce by rule 15
+
+
+state 93:
+
+	type_dec : TYPE ID EQ ARRAY OF ID .  (reduce by rule 39)
+
+
+
+	.	reduce by rule 39
+
+
 state 94:
 
-	field_dec : ID COLON ID .  (reduce by rule 40)
+	type_dec : TYPE ID EQ LBRACE field_decs RBRACE .  (reduce by rule 40)
 
 
 
@@ -1339,30 +1389,31 @@ state 95:
 
 	bin_op : exp . EQ exp 
 	bin_op : exp . MINUS exp 
+	bin_op : exp . PLUS exp 
 	bin_op : exp . TIMES exp 
-	fun_dec : FUNCTION ID LPAREN field_decs RPAREN EQ exp .  (reduce by rule 41)
+	var_dec : VAR ID COLON ID ASSIGN exp .  (reduce by rule 36)
 
+	PLUS	shift 19
 	MINUS	shift 18
 	TIMES	shift 17
 	EQ	shift 16
 
 
-	.	reduce by rule 41
+	.	reduce by rule 36
 
 
 state 96:
 
-	fun_dec : FUNCTION ID LPAREN field_decs RPAREN COLON ID . EQ exp 
-
-	EQ	shift 97
+	field_decs : field_dec COMMA field_decs .  (reduce by rule 41)
 
 
-	.	error
+
+	.	reduce by rule 41
 
 
 state 97:
 
-	fun_dec : FUNCTION ID LPAREN field_decs RPAREN COLON ID EQ . exp 
+	fun_dec : FUNCTION ID LPAREN field_decs RPAREN EQ . exp 
 
 	ID	shift 15
 	INT	shift 14
@@ -1372,7 +1423,7 @@ state 97:
 	LET	shift 10
 	NIL	shift 9
 
-	exp	goto 98
+	exp	goto 100
 	arr_exp	goto 7
 	rec_exp	goto 6
 	let'	goto 5
@@ -1386,20 +1437,92 @@ state 97:
 
 state 98:
 
+	fun_dec : FUNCTION ID LPAREN field_decs RPAREN COLON . ID EQ exp 
+
+	ID	shift 101
+
+
+	.	error
+
+
+state 99:
+
+	field_dec : ID COLON ID .  (reduce by rule 43)
+
+
+
+	.	reduce by rule 43
+
+
+state 100:
+
 	bin_op : exp . EQ exp 
 	bin_op : exp . MINUS exp 
+	bin_op : exp . PLUS exp 
 	bin_op : exp . TIMES exp 
-	fun_dec : FUNCTION ID LPAREN field_decs RPAREN COLON ID EQ exp .  (reduce by rule 42)
+	fun_dec : FUNCTION ID LPAREN field_decs RPAREN EQ exp .  (reduce by rule 44)
 
+	PLUS	shift 19
 	MINUS	shift 18
 	TIMES	shift 17
 	EQ	shift 16
 
 
-	.	reduce by rule 42
+	.	reduce by rule 44
 
 
-state 99:
+state 101:
+
+	fun_dec : FUNCTION ID LPAREN field_decs RPAREN COLON ID . EQ exp 
+
+	EQ	shift 102
+
+
+	.	error
+
+
+state 102:
+
+	fun_dec : FUNCTION ID LPAREN field_decs RPAREN COLON ID EQ . exp 
+
+	ID	shift 15
+	INT	shift 14
+	STRING	shift 13
+	LPAREN	shift 12
+	IF	shift 11
+	LET	shift 10
+	NIL	shift 9
+
+	exp	goto 103
+	arr_exp	goto 7
+	rec_exp	goto 6
+	let'	goto 5
+	if'	goto 4
+	funcall	goto 3
+	bin_op	goto 2
+	assign	goto 1
+
+	.	error
+
+
+state 103:
+
+	bin_op : exp . EQ exp 
+	bin_op : exp . MINUS exp 
+	bin_op : exp . PLUS exp 
+	bin_op : exp . TIMES exp 
+	fun_dec : FUNCTION ID LPAREN field_decs RPAREN COLON ID EQ exp .  (reduce by rule 45)
+
+	PLUS	shift 19
+	MINUS	shift 18
+	TIMES	shift 17
+	EQ	shift 16
+
+
+	.	reduce by rule 45
+
+
+state 104:
 
 
 	EOF	accept
@@ -1407,5 +1530,5 @@ state 99:
 
 	.	error
 
-116 of 352 action table entries left after compaction
-185 goto table entries
+137 of 392 action table entries left after compaction
+202 goto table entries
